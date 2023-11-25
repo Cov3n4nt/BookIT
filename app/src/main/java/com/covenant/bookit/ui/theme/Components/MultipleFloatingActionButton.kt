@@ -174,7 +174,6 @@ fun SmallFloatingActionButtonRow(
             )
         }
         SmallFloatingActionButton(
-            shape = CircleShape,
             modifier = Modifier.padding(4.dp),
             onClick = { item.onFabItemClicked() },
             containerColor = MaterialTheme.colorScheme.secondaryContainer,

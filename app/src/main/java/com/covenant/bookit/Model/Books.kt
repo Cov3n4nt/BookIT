@@ -4,11 +4,13 @@ import java.time.LocalDate
 
 data class Books (
     val id: String = "",
-    val author: String? = null,
+    val title: String,
+    val author: String,
     val pages: Int? = null,
-    val publishDate: Long? = null,
-    val dateAdded: Long? = null,
-    val dateModified: Long? = null,
+    val pagesRead: Int = 0,
+    val publishDate: LocalDate,
+    val dateAdded: LocalDate,
+    val dateModified: LocalDate,
     val favorite: Boolean = false,
     val archived: Boolean = false,
 )

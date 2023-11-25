@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 rootProject.name = "BookIT"
 include(":app")
 include(":extensions")
+include(":components")

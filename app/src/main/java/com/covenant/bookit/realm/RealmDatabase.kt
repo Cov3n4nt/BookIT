@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.mongodb.kbson.ObjectId
 import java.lang.IllegalStateException
+import java.time.Instant
+import java.time.LocalDate
 
 class RealmDatabase {
     private val realm: Realm by lazy {
@@ -19,28 +21,30 @@ class RealmDatabase {
             .build()
         Realm.open(config)
     }
+    fun getAllBooks(): Flow<List<RealmBook>> = realm.query<RealmBook>("favorite ==  $0 AND archived == $1",false,false).asFlow().map { it.list }
 
-    fun getAllBooks(): Flow<List<RealmBook>> = realm.query<RealmBook>().asFlow().map { it.list }
 
     suspend fun addBook(
+        title: String,
         author: String,
-        publishDate: Long,
-        dateAdded: Long,
-        dateModified: Long,
+        publishedDate: LocalDate,
+        pages: Int,
     ) {
         withContext(Dispatchers.IO) {
             realm.write {
-                RealmBook().apply {
+               val book = RealmBook().apply {
+                    this.title = title
                     this.author = author
-                    this.publishDate = publishDate
-                    this.dateAdded = dateAdded
-                    this.dateModified = dateModified
+                    this.pages = pages
+                    this.publishDate = publishedDate.toEpochDay()
+                    this.dateAdded = LocalDate.now().toEpochDay()
                 }
+                copyToRealm(book)
             }
         }
     }
 
-    suspend fun deletePet(id: ObjectId) {
+    suspend fun deleteBook(id: ObjectId) {
         withContext(Dispatchers.IO) {
             realm.write {
                 query<RealmBook>("id == $0", id)
@@ -88,31 +92,32 @@ class RealmDatabase {
 
     suspend fun updateBook(
         book: Books,
+        title: String,
         author: String,
-        publishDate: Long,
-        dateAdded: Long,
-        dateModified: Long,
+        pages: Int,
+        pagesRead: Int,
+        publishDate: LocalDate,
     ) {
         withContext(Dispatchers.IO) {
             realm.write {
                 val bookResult: RealmBook? = realm.query<RealmBook>("id == $0", ObjectId(book.id)).first().find()
                 if(bookResult != null){
-                    bookResult.apply {
+                    val bookRealm = findLatest(bookResult)
+                    bookRealm?.apply {
+                        this.title = title
                         this.author = author
-                        this.publishDate = publishDate
-                        this.dateAdded = dateAdded
-                        this.dateModified = dateModified
+                        this.pages = pages
+                        this.pagesRead = pagesRead
+                        this.dateModified = LocalDate.now().toEpochDay()
+                        this.publishDate = publishDate.toEpochDay()
                     }
-                }else{
+                }
+                else{
                     throw IllegalStateException("Book not found!")
                 }
             }
         }
     }
-
-
-
-
 
 }
 
