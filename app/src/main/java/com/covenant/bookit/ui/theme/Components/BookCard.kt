@@ -85,7 +85,7 @@ fun BookCard(
                                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(
                                         text = book.author.replaceRange(if(book.author.length>10) 10
-                                        else book.author.length, book.author.length," ")
+                                        else book.author.length, book.author.length,if(book.author.length>10)"..." else "")
                                                 + " " + book.publishDate.year.toString(),
                                         maxLines = 1)
                                 }
