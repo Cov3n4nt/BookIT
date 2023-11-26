@@ -1,20 +1,26 @@
 package com.covenant.bookit.ui.theme.screens
 
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.material3.Snackbar
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.covenant.bookit.Model.Books
 import com.covenant.bookit.realm.RealmDatabase
-import com.covenant.bookit.ui.theme.screens.BookLists.AddBooksDialogState
-import com.covenant.bookit.ui.theme.screens.BookLists.ViewBookDialogState
+import com.covenant.bookit.ui.theme.screens.AddBookDialog.AddBooksDialogState
+import com.covenant.bookit.ui.theme.screens.Archives.DeleteDialogState
+import com.covenant.bookit.ui.theme.screens.Archives.RestoreDialogState
+import com.covenant.bookit.ui.theme.screens.EditDialog.EditBookDialogState
+import com.covenant.bookit.ui.theme.screens.ViewBookDialog.ViewBookDialogState
 import com.hamthelegend.enchantmentorder.extensions.combineToStateFlow
 import com.hamthelegend.enchantmentorder.extensions.search
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.mongodb.kbson.BsonObjectId
 import org.mongodb.kbson.ObjectId
-import java.security.acl.Owner
 import java.time.LocalDate
 
 class BooksViewModel: ViewModel(){
@@ -27,13 +33,35 @@ class BooksViewModel: ViewModel(){
         _searchQuery.update { newQuery }
     }
 
+    val favoriteBooks = combineToStateFlow(
+        database.getFavoriteBooks(),
+        searchQuery,
+        scope = viewModelScope,
+        initialValue = emptyList(),
+    ){realmBooks, searchQuery ->
+        realmBooks.map { realmBook ->
+            Books(
+                id = realmBook.id.toHexString(),
+                author = realmBook.author!!,
+                title = realmBook.title!!,
+                pages = realmBook.pages,
+                pagesRead = realmBook.pagesRead,
+                publishDate = LocalDate.ofEpochDay(realmBook.publishDate!!),
+                dateAdded = LocalDate.ofEpochDay(realmBook.dateAdded!!),
+                dateModified = LocalDate.ofEpochDay(realmBook.dateModified!!),
+                favorite = realmBook.favorite,
+                archived = realmBook.archived,
+            )
+        }.search(searchQuery){it.title}
+    }
+
     val books = combineToStateFlow(
         database.getAllBooks(),
         searchQuery,
         scope = viewModelScope,
         initialValue = emptyList(),
-    ) { realmPets, searchQuery ->
-        realmPets.map { realmBook ->
+    ) { realmBooks, searchQuery ->
+        realmBooks.map { realmBook ->
             Books(
                 id = realmBook.id.toHexString(),
                 author = realmBook.author!!,
@@ -49,6 +77,28 @@ class BooksViewModel: ViewModel(){
         }.search(searchQuery) {it.title}
     }
 
+    val archivedBooks = combineToStateFlow(
+        database.getArchivedBooks(),
+        searchQuery,
+        scope = viewModelScope,
+        initialValue = emptyList(),
+    ){realmArchivedBooks, searchQuery ->
+        realmArchivedBooks.map { realmBook ->
+            Books(
+                id = realmBook.id.toHexString(),
+                author = realmBook.author!!,
+                title = realmBook.title!!,
+                pages = realmBook.pages,
+                pagesRead = realmBook.pagesRead,
+                publishDate = LocalDate.ofEpochDay(realmBook.publishDate!!),
+                dateAdded = LocalDate.ofEpochDay(realmBook.dateAdded!!),
+                dateModified = LocalDate.ofEpochDay(realmBook.dateModified!!),
+                favorite = realmBook.favorite,
+                archived = realmBook.archived,
+            )
+        }.search(searchQuery){it.title}
+    }
+
 
     private val _addBooksDialogState = MutableStateFlow<AddBooksDialogState>(AddBooksDialogState.Hidden)
     val addBooksDialogState = _addBooksDialogState.asStateFlow()
@@ -56,6 +106,40 @@ class BooksViewModel: ViewModel(){
     private val _viewBookDialogState = MutableStateFlow<ViewBookDialogState>(ViewBookDialogState.Hidden)
     val viewBookDialogState = _viewBookDialogState.asStateFlow()
 
+    private val _editBookDialogState = MutableStateFlow<EditBookDialogState>(EditBookDialogState.Hidden)
+    val editBookDialogState = _editBookDialogState.asStateFlow()
+
+    private val _deleteDialogsState = MutableStateFlow<DeleteDialogState>(DeleteDialogState.Hide)
+    val deleteDialogState = _deleteDialogsState.asStateFlow()
+
+
+    private val _restoreDialogsState = MutableStateFlow<RestoreDialogState>(RestoreDialogState.Hide)
+    val restoreDialogState = _restoreDialogsState.asStateFlow()
+
+    fun initiateDeleteAll(){
+        _deleteDialogsState.update { DeleteDialogState.Visible }
+    }
+
+    fun hideDeleteAll(){
+        _deleteDialogsState.update { DeleteDialogState.Hide }
+    }
+
+    fun initiateRestoreAll(){
+        _restoreDialogsState.update { RestoreDialogState.Visible }
+    }
+
+    fun hideRestoreAll(){
+        _restoreDialogsState.update { RestoreDialogState.Hide }
+    }
+
+
+    fun initiateEdit(book: Books){
+        _editBookDialogState.update { EditBookDialogState.Visible(book) }
+    }
+
+    fun hideEdit(){
+        _editBookDialogState.update { EditBookDialogState.Hidden }
+    }
 
     fun hideAddBooksDialogState(){
         _addBooksDialogState.update { AddBooksDialogState.Hidden }
@@ -122,12 +206,16 @@ class BooksViewModel: ViewModel(){
         }
     }
 
-    fun updateDatePublished(datePublished: LocalDate) {
+    fun updateDatePublished(newDatePublished: String) {
         _addBooksDialogState.update {
             if (it is AddBooksDialogState.Visible) {
+                val publishedDate = when (newDatePublished) {
+                    "" -> LocalDate.now()
+                    else -> LocalDate.parse(newDatePublished) ?: it.publishedDate
+                }
                 it.copy(
-                    publishedDate = datePublished,
-                    hasPublishedDateWarning = false
+                    publishedDate = publishedDate!!,
+                    hasPagesWarning = false,
                 )
             } else it
         }
@@ -167,6 +255,18 @@ class BooksViewModel: ViewModel(){
         }
     }
 
+    fun restoreAll(){
+        viewModelScope.launch {
+            database.restoreAll()
+        }
+    }
+
+    fun deleteAll(){
+        viewModelScope.launch {
+            database.deleteAll()
+        }
+    }
+
     fun initiateViewBook(book:Books){
         _viewBookDialogState.update { ViewBookDialogState.Visible(book) }
     }
@@ -177,8 +277,8 @@ class BooksViewModel: ViewModel(){
 
 
     fun showDatePickerOnViewBook(){
-        _viewBookDialogState.update {
-            if(it is ViewBookDialogState.Visible){
+        _editBookDialogState.update {
+            if(it is EditBookDialogState.Visible){
                 it.copy(
                     datePickerState = true
                 )
@@ -187,8 +287,8 @@ class BooksViewModel: ViewModel(){
     }
 
     fun hideDatePickerOnViewBook(){
-        _viewBookDialogState.update {
-            if(it is ViewBookDialogState.Visible){
+        _editBookDialogState.update {
+            if(it is EditBookDialogState.Visible){
                 it.copy(
                     datePickerState = false
                 )
@@ -197,8 +297,8 @@ class BooksViewModel: ViewModel(){
     }
 
     fun updateTitleOnViewBook(title: String) {
-        _viewBookDialogState.update {
-            if (it is ViewBookDialogState.Visible) {
+        _editBookDialogState.update {
+            if (it is EditBookDialogState.Visible) {
                 it.copy(
                     title = title,
                     hasTitleWarning = false
@@ -208,8 +308,8 @@ class BooksViewModel: ViewModel(){
     }
 
     fun updateAuthorOnViewBook(author: String) {
-        _viewBookDialogState.update {
-            if (it is ViewBookDialogState.Visible) {
+        _editBookDialogState.update {
+            if (it is EditBookDialogState.Visible) {
                 it.copy(
                     author = author,
                     hasAuthorWarning = false
@@ -219,8 +319,8 @@ class BooksViewModel: ViewModel(){
     }
 
     fun updatePagesOnViewBook(pages: String) {
-        _viewBookDialogState.update {
-            if (it is ViewBookDialogState.Visible) {
+        _editBookDialogState.update {
+            if (it is EditBookDialogState.Visible) {
                 val numberOfPages = when (pages) {
                     "" -> null
                     else -> pages.toIntOrNull() ?: it.pages
@@ -249,19 +349,9 @@ class BooksViewModel: ViewModel(){
         }
     }
 
-    fun updateDatePublishedOnViewBook(datePublished: LocalDate) {
-        _viewBookDialogState.update {
-            if (it is ViewBookDialogState.Visible) {
-                it.copy(
-                    publishedDate = datePublished,
-                    hasPublishedDateWarning = false
-                )
-            } else it
-        }
-    }
-    fun updateDatePublishedOnViewBookString(newDatePublished: String) {
-        _viewBookDialogState.update {
-            if (it is ViewBookDialogState.Visible) {
+    fun updateDatePublishedOnEdit(newDatePublished: String) {
+        _editBookDialogState.update {
+            if (it is EditBookDialogState.Visible) {
                 val publishedDate = when (newDatePublished) {
                     "" -> null
                     else -> LocalDate.parse(newDatePublished) ?: it.publishedDate
@@ -275,9 +365,9 @@ class BooksViewModel: ViewModel(){
     }
 
     fun updateBook(){
-        var state = _viewBookDialogState.value
+        var state = _editBookDialogState.value
         with(state){
-            if(this is ViewBookDialogState.Visible){
+            if(this is EditBookDialogState.Visible){
                 if(author.isBlank() || title.isBlank() || pages == null){
                     state = copy(
                         hasAuthorWarning = author.isBlank(),
@@ -291,18 +381,41 @@ class BooksViewModel: ViewModel(){
                             title = title,
                             author = author,
                             pages = pages,
-                            pagesRead = pagesRead,
                             publishDate = publishedDate,
                         )
                     }
-                    state = ViewBookDialogState.Hidden
+                    state = EditBookDialogState.Hidden
                 }
-                _viewBookDialogState.update{state}
+                _editBookDialogState.update{state}
             }
         }
     }
 
+    fun updatePagesRead(){
+        val state = _viewBookDialogState.value
+        with(state){
+            if(this is ViewBookDialogState.Visible){
+                viewModelScope.launch {
+                    database.updatePagesRead(
+                       book = book,
+                        pagesRead = pagesRead
+                    )
+                }
+                _viewBookDialogState.update{ ViewBookDialogState.Hidden}
+            }
+        }
+    }
 
+    fun archiveBook(book: Books){
+        viewModelScope.launch {
+            database.archive(book)
+        }
+    }
+    fun favoriteBook(book: Books){
+        viewModelScope.launch {
+            database.favorite(book)
+        }
+    }
 
 
 

@@ -109,7 +109,7 @@ fun MultiFloatingActionButton(
                     }) {
                     translate(150f, top = 300f) {
                         scale(5f) {}
-                        drawCircle(Color.Black.copy(alpha = 0.3f), radius = 200.dp.toPx())
+                        drawCircle(Color.Black.copy(alpha = 0.3f), radius = 500.dp.toPx())
 
                     }
                 }

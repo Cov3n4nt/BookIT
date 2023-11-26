@@ -23,8 +23,11 @@ import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.covenant.bookit.Model.Books
 import com.covenant.bookit.Model.Sample
 import com.covenant.bookit.ui.theme.BookITTheme
@@ -48,7 +51,10 @@ fun BookCard(
     SwipeToDismiss(
         state = dismissState,
         directions = setOf(DismissDirection.StartToEnd),
-        background = { DismissBackground(dismissState = dismissState) },
+        background = {
+            if (book.archived) DismissBackground(dismissState = dismissState)
+            else ArchiveBackground(dismissState = dismissState)
+        },
         dismissContent = {
             Card(
                 modifier = modifier,
@@ -71,15 +77,22 @@ fun BookCard(
                             }
 
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                Text(text = "Title: ${book.title}")
-                                Text(text = "Author: ${book.author}")
-                                Text(text = "Published Date: ${book.publishDate.year}")
+                                Text(
+                                    text = book.title,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(text = book.author)
+                                    Text(text =  book.publishDate.year.toString())
+                                }
                             }
 
                         }
                         LinearProgressIndicator(
                             progress =  book.pagesRead.toFloat() / book.pages!!.toFloat(),
-                            modifier = Modifier.padding(4.dp)
+                            modifier = Modifier
+                                .padding(4.dp)
                                 .fillMaxWidth(),
                             color = MaterialTheme.colorScheme.primary,
                             trackColor = MaterialTheme.colorScheme.primaryContainer,

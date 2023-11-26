@@ -23,7 +23,6 @@ fun DatePickerAlertDialog(
     onConfirm: (LocalDate) -> Unit,
 ) {
     val state = rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
-
     if (visible) {
         DatePickerDialog(
             onDismissRequest = onDismissRequest,

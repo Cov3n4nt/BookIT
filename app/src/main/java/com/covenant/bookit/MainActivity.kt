@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.covenant.bookit.ui.theme.BookITTheme
-import com.covenant.bookit.ui.theme.screens.BookLists.NavGraphs
+import com.covenant.bookit.ui.theme.screens.NavGraphs
 import com.ramcosta.composedestinations.DestinationsNavHost
 
 class MainActivity : ComponentActivity() {

@@ -1,10 +1,8 @@
-package com.covenant.bookit.ui.theme.screens.BookLists
+package com.covenant.bookit.ui.theme.screens.AddBookDialog
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -16,10 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -37,7 +31,6 @@ fun AddBookDialog(
     modifier: Modifier = Modifier,
 ) {
     if (state is AddBooksDialogState.Visible) {
-
         AlertDialog(
             modifier = modifier,
             onDismissRequest = stateChangeListener.onHideAddBookDialog,
@@ -46,7 +39,7 @@ fun AddBookDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     TextField(
                         label = { Text(text = "Title") },
-                        value = state.title?: "",
+                        value = state.title,
                         onValueChange = stateChangeListener.onTitleChange,
                         isError = state.hasTitleWarning,
                         trailingIcon = {
@@ -58,7 +51,7 @@ fun AddBookDialog(
                     TextField(
                         label = { Text(text = "Author") },
                         modifier = Modifier.wrapContentWidth(),
-                        value = state.author?:"",
+                        value = state.author,
                         onValueChange = stateChangeListener.onAuthorChange,
                         isError = state.hasAuthorWarning,
                         trailingIcon = {
@@ -82,17 +75,21 @@ fun AddBookDialog(
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(14.dp)
                     ) {
-                        Text(
-                            text = "Date Published: ${state.publishedDate?.toString()?: "Select a Date"}",
-                            color = if(state.hasPublishedDateWarning)MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.inverseSurface
-                        )
+                        TextField(
+                            label = { Text(text = "Date Published") },
+                            modifier = Modifier.wrapContentWidth()
+                                .weight(2f),
+                            readOnly = true,
+                            value = if(state.publishedDate == null) LocalDate.now().toString() else state.publishedDate.toString(),
+                            onValueChange = stateChangeListener.onPublishDateChange,
+                            )
                         IconButton(
                             imageVector = Icons.Default.DateRange,
                             contentDescription = "Date Picker",
-                            onClick = {stateChangeListener.onDatePickerShow()}
+                            onClick = stateChangeListener.onDatePickerShow,
+                            modifier = Modifier
+                                .weight(1f)
                         )
                     }
                 }
@@ -114,7 +111,7 @@ fun AddBookDialog(
         DatePickerAlertDialog(
             visible = state.datePickerState,
             onDismissRequest =  stateChangeListener.onDatePickerHide ,
-            onConfirm = {stateChangeListener.onPublishDateChange(it)}
+            onConfirm = {stateChangeListener.onPublishDateChange(it.toString())}
         )
     }
 }

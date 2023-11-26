@@ -1,4 +1,4 @@
-package com.covenant.bookit.ui.theme.screens.BookLists
+package com.covenant.bookit.ui.theme.screens.AddBookDialog
 
 import com.covenant.bookit.Model.Books
 import java.time.LocalDate
@@ -22,7 +22,7 @@ sealed class AddBooksDialogState {
 }
 
 class AddBooksDialogStateChangeListener(
-    val onDeleteBook: (Books) -> Unit,
+    val onArchiveBook: (Books) -> Unit,
     val onDatePickerShow: () -> Unit,
     val onDatePickerHide: () -> Unit,
     val onShowAddBookDialog: () -> Unit,
@@ -30,6 +30,6 @@ class AddBooksDialogStateChangeListener(
     val onTitleChange: (String) -> Unit,
     val onAuthorChange: (String) -> Unit,
     val onPagesChange: (String) -> Unit,
-    val onPublishDateChange: (LocalDate) -> Unit,
+    val onPublishDateChange: (String) -> Unit,
     val onAddBook: () -> Unit,
 )

@@ -12,7 +12,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -22,14 +24,27 @@ import androidx.compose.ui.unit.dp
 import com.covenant.bookit.Model.Books
 import com.covenant.bookit.Model.Sample
 import com.covenant.bookit.ui.theme.BookITTheme
+import com.covenant.bookit.ui.theme.Components.ArchiveBackground
 import com.covenant.bookit.ui.theme.Components.BookCard
 import com.covenant.bookit.ui.theme.Components.FabItem
 import com.covenant.bookit.ui.theme.Components.MultiFloatingActionButton
 import com.covenant.bookit.ui.theme.Components.SearchTextField
+import com.covenant.bookit.ui.theme.screens.AddBookDialog.AddBookDialog
+import com.covenant.bookit.ui.theme.screens.AddBookDialog.AddBooksDialogState
+import com.covenant.bookit.ui.theme.screens.AddBookDialog.AddBooksDialogStateChangeListener
+import com.covenant.bookit.ui.theme.screens.EditDialog.EditBookDialog
+import com.covenant.bookit.ui.theme.screens.EditDialog.EditBookDialogState
+import com.covenant.bookit.ui.theme.screens.EditDialog.EditBookDialogStateChangeListener
+import com.covenant.bookit.ui.theme.screens.ViewBookDialog.ViewBookDialog
+import com.covenant.bookit.ui.theme.screens.ViewBookDialog.ViewBookDialogState
+import com.covenant.bookit.ui.theme.screens.ViewBookDialog.ViewBookDialogStateChangeListener
+import com.covenant.bookit.ui.theme.screens.destinations.ArchiveDestinationDestination
+import com.covenant.bookit.ui.theme.screens.destinations.FavoritesDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.thebrownfoxx.components.extension.plus
 
 @OptIn(ExperimentalMaterial3Api::class)
+
 
 @Composable
 fun BooksListsScreen(
@@ -41,6 +56,8 @@ fun BooksListsScreen(
     addBooksDialogStateChangeListener: AddBooksDialogStateChangeListener,
     viewBookDialogState: ViewBookDialogState,
     viewBookDialogStateChangeListener: ViewBookDialogStateChangeListener,
+    editBookDialogState: EditBookDialogState,
+    editBookDialogStateChangeListener: EditBookDialogStateChangeListener,
 ) {
     Scaffold(
         topBar = {
@@ -52,33 +69,7 @@ fun BooksListsScreen(
                     .padding(8.dp),
             )
         },
-        bottomBar = {
-            MultiFloatingActionButton(
-                fabIcon = Icons.Default.Add,
-                items = arrayListOf(
-                    FabItem(
-                        icon= Icons.Default.Star,
-                        label = "Favorites",
-                        onFabItemClicked = {}
-                    ),
-                    FabItem(
-                        icon = Icons.Default.Archive,
-                        label = "Archive",
-                        onFabItemClicked = {}
-                    ),
-                    FabItem(
-                        icon = Icons.Default.Book,
-                        label = "Add Book",
-                        onFabItemClicked = addBooksDialogStateChangeListener.onShowAddBookDialog
-                    ),
-                )
-            )
-        }
     ) { contentPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-        ){
             LazyColumn(
                 contentPadding = contentPadding + PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -89,12 +80,31 @@ fun BooksListsScreen(
                 ) { book ->
                     BookCard(
                         book = book,
-                        onRemove = {addBooksDialogStateChangeListener.onDeleteBook(book)},
+                        onRemove = {addBooksDialogStateChangeListener.onArchiveBook(book)},
                         onView = {viewBookDialogStateChangeListener.initiateView(book)},
                     )
                 }
             }
-        }
+        MultiFloatingActionButton(
+            fabIcon = Icons.Default.LibraryBooks,
+            items = arrayListOf(
+                FabItem(
+                    icon= Icons.Default.Star,
+                    label = "Favorites",
+                    onFabItemClicked = {navigator?.navigate(FavoritesDestination)}
+                ),
+                FabItem(
+                    icon = Icons.Default.Archive,
+                    label = "Archive",
+                    onFabItemClicked = {navigator?.navigate(ArchiveDestinationDestination)}
+                ),
+                FabItem(
+                    icon = Icons.Default.Book,
+                    label = "Add Book",
+                    onFabItemClicked = addBooksDialogStateChangeListener.onShowAddBookDialog
+                ),
+            )
+        )
     }
 
     AddBookDialog(
@@ -104,7 +114,13 @@ fun BooksListsScreen(
 
     ViewBookDialog(
         state = viewBookDialogState,
-        stateChangeListener = viewBookDialogStateChangeListener
+        stateChangeListener = viewBookDialogStateChangeListener,
+        navigator = navigator,
+        editBookDialogStateChangeListener = editBookDialogStateChangeListener
+    )
+    EditBookDialog(
+        state = editBookDialogState,
+        stateChangeListener = editBookDialogStateChangeListener
     )
 }
 
@@ -128,20 +144,28 @@ fun BookListsScreenPrev() {
                 onTitleChange = {},
                 onDatePickerHide = {},
                 onDatePickerShow = {},
-                onDeleteBook = {},
+                onArchiveBook = {},
             ),
             viewBookDialogState = ViewBookDialogState.Hidden,
             viewBookDialogStateChangeListener = ViewBookDialogStateChangeListener(
-                onShowDatePicker = {},
-                onAuthorChange = {},
-                onPublishDateChange = {},
-                onPagesChange = {},
                 onPagesReadChange = {},
-                onTitleChange = {},
-                onUpdate = {},
                 onHideViewBook = {},
-                onHideDatePicker = {},
                 initiateView = {},
+                onUpdatePagesRead = {},
+            ),
+            editBookDialogState = EditBookDialogState.Hidden,
+            editBookDialogStateChangeListener = EditBookDialogStateChangeListener(
+                onUpdate = {},
+                onHideDatePicker = {},
+                onTitleChange = {},
+                onPagesChange = {},
+                onPublishDateChange = {},
+                onAuthorChange = {},
+                onShowDatePicker = {},
+                onHideEditBook = {},
+                initiateEdit = {},
+                onRestore = {},
+                onFavorite = {},
             )
         )
     }
