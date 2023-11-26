@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Error
@@ -15,6 +17,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.covenant.bookit.ui.theme.Components.DatePickerAlertDialog
 import com.covenant.bookit.ui.theme.screens.EditDialog.EditBookDialogState
@@ -39,6 +42,7 @@ fun EditBookDialog(
                     TextField(
                         label = { Text(text = "Title") },
                         value = state.title,
+                        singleLine = true,
                         onValueChange = stateChangeListener.onTitleChange,
                         isError = state.hasTitleWarning,
                         trailingIcon = {
@@ -50,6 +54,7 @@ fun EditBookDialog(
                     TextField(
                         label = { Text(text = "Author") },
                         modifier = Modifier.wrapContentWidth(),
+                        singleLine = true,
                         value = state.author,
                         onValueChange = stateChangeListener.onAuthorChange,
                         isError = state.hasAuthorWarning,
@@ -62,6 +67,8 @@ fun EditBookDialog(
                     TextField(
                         label = { Text(text = "Number of Pages") },
                         modifier = Modifier.wrapContentWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         value = state.pages?.toString()?: "",
                         onValueChange = stateChangeListener.onPagesChange,
                         isError = state.hasPagesWarning,

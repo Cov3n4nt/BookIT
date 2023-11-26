@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Error
@@ -16,6 +17,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.covenant.bookit.ui.theme.Components.DatePickerAlertDialog
 import com.thebrownfoxx.components.FilledButton
@@ -39,6 +41,7 @@ fun AddBookDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     TextField(
                         label = { Text(text = "Title") },
+                        singleLine = true,
                         value = state.title,
                         onValueChange = stateChangeListener.onTitleChange,
                         isError = state.hasTitleWarning,
@@ -51,6 +54,7 @@ fun AddBookDialog(
                     TextField(
                         label = { Text(text = "Author") },
                         modifier = Modifier.wrapContentWidth(),
+                        singleLine = true,
                         value = state.author,
                         onValueChange = stateChangeListener.onAuthorChange,
                         isError = state.hasAuthorWarning,
@@ -62,6 +66,8 @@ fun AddBookDialog(
 
                     TextField(
                         label = { Text(text = "Number of Pages") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.wrapContentWidth(),
                         value = state.pages?.toString()?: "",
                         onValueChange = stateChangeListener.onPagesChange,
@@ -77,12 +83,17 @@ fun AddBookDialog(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         TextField(
-                            label = { Text(text = "Date Published") },
+                            label = { Text(text = "Publish Date") },
                             modifier = Modifier.wrapContentWidth()
                                 .weight(2f),
                             readOnly = true,
-                            value = if(state.publishedDate == null) LocalDate.now().toString() else state.publishedDate.toString(),
+                            value = if(state.publishedDate == null) "" else state.publishedDate.toString(),
                             onValueChange = stateChangeListener.onPublishDateChange,
+                            isError = state.hasPublishedDateWarning,
+                            trailingIcon = {
+                                if (state.hasPublishedDateWarning)
+                                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+                            }
                             )
                         IconButton(
                             imageVector = Icons.Default.DateRange,
