@@ -51,7 +51,7 @@ fun ViewBookDialog(
                         modifier = Modifier.fillMaxWidth()
                         ) {
                         Column{
-                            Text(text = state.title.replaceRange(15, state.title.length, "..."))
+                            Text(text = state.title.replaceRange(if(state.title.length > 12) 12 else state.title.length, state.title.length, ""))
                             Text(text = "Date Added: ${state.dateAdded}", fontSize = 14.sp)
                             Text(text = "Date Modified: ${state.dateModified}", fontSize = 14.sp)
                         }
