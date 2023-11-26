@@ -51,10 +51,7 @@ fun BookCard(
     SwipeToDismiss(
         state = dismissState,
         directions = setOf(DismissDirection.StartToEnd),
-        background = {
-            if (book.archived) DismissBackground(dismissState = dismissState)
-            else ArchiveBackground(dismissState = dismissState)
-        },
+        background = {},
         dismissContent = {
             Card(
                 modifier = modifier,

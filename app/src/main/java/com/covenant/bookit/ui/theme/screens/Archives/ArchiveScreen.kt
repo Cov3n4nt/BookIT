@@ -16,10 +16,12 @@ import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.covenant.bookit.Model.Books
 import com.covenant.bookit.ui.theme.Components.BookCard
+import com.covenant.bookit.ui.theme.Components.EmptyScreen
 import com.covenant.bookit.ui.theme.Components.FabItem
 import com.covenant.bookit.ui.theme.Components.MultiFloatingActionButton
 import com.covenant.bookit.ui.theme.Components.SearchTextField
@@ -57,21 +59,35 @@ fun ArchiveScreen(
             )
         },
     ) { contentPadding ->
-            LazyColumn(
-                contentPadding = contentPadding + PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(
-                    items = books,
-                    key = {book -> book.id}
-                ) { book ->
-                    BookCard(
-                        book = book,
-                        onRemove = {deleteStateChangeListener.onDelete(book)},
-                        onView = {viewBookDialogStateChangeListener.initiateView(book)},
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+        ){
+            if(books.isEmpty()){
+                EmptyScreen(
+                    icon = Icons.Default.Archive,
+                    text = "There are no books here",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }else{
+                LazyColumn(
+                    contentPadding = contentPadding + PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    items(
+                        items = books,
+                        key = {book -> book.id}
+                    ) { book ->
+                        BookCard(
+                            book = book,
+                            onRemove = {deleteStateChangeListener.onDelete(book)},
+                            onView = {viewBookDialogStateChangeListener.initiateView(book)},
+                        )
+                    }
                 }
             }
+        }
+
         val fabItems = if (books.isNotEmpty()) {
             listOf(
                 FabItem(

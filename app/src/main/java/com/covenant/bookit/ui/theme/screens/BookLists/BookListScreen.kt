@@ -2,9 +2,14 @@ package com.covenant.bookit.ui.theme.screens.BookLists
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,16 +21,23 @@ import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.covenant.bookit.Model.Books
 import com.covenant.bookit.Model.Sample
 import com.covenant.bookit.ui.theme.BookITTheme
-import com.covenant.bookit.ui.theme.Components.ArchiveBackground
 import com.covenant.bookit.ui.theme.Components.BookCard
+import com.covenant.bookit.ui.theme.Components.EmptyScreen
 import com.covenant.bookit.ui.theme.Components.FabItem
 import com.covenant.bookit.ui.theme.Components.MultiFloatingActionButton
 import com.covenant.bookit.ui.theme.Components.SearchTextField
@@ -68,23 +80,37 @@ fun BooksListsScreen(
                     .fillMaxWidth()
                     .padding(8.dp),
             )
-        },
+        }
     ) { contentPadding ->
-            LazyColumn(
-                contentPadding = contentPadding + PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                items(
-                    items = books,
-                    key = {book -> book.id}
-                ) { book ->
-                    BookCard(
-                        book = book,
-                        onRemove = {addBooksDialogStateChangeListener.onArchiveBook(book)},
-                        onView = {viewBookDialogStateChangeListener.initiateView(book)},
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+        ){
+            if(books.isEmpty()){
+                EmptyScreen(
+                    icon = Icons.Default.LibraryBooks,
+                    text = "There are no books here",
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }else{
+                LazyColumn(
+                    contentPadding = contentPadding + PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    items(
+                        items = books,
+                        key = {book -> book.id}
+                    ) { book ->
+                        BookCard(
+                            book = book,
+                            onRemove = {addBooksDialogStateChangeListener.onArchiveBook(book)},
+                            onView = {viewBookDialogStateChangeListener.initiateView(book)},
+                        )
+                    }
                 }
             }
+        }
+
         MultiFloatingActionButton(
             fabIcon = Icons.Default.LibraryBooks,
             items = arrayListOf(

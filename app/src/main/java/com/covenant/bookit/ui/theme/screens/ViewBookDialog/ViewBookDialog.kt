@@ -46,7 +46,7 @@ fun ViewBookDialog(
                         ) {
                        Column {
                            Text(text = state.title)
-                           Text(text = "By : ${state.author}", fontSize = 14.sp)
+                           Text(text = "Pages : ${state.pages}", fontSize = 14.sp)
                            Text(text = "Date Added: ${state.dateAdded}", fontSize = 10.sp)
                            Text(text = "Date Modified: ${state.dateModified}", fontSize = 10.sp)
                        }
