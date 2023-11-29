@@ -51,9 +51,12 @@ fun ViewBookDialog(
                         modifier = Modifier.fillMaxWidth()
                         ) {
                         Column{
-                            Text(text = state.title.replaceRange(if(state.title.length > 12) 12 else state.title.length, state.title.length, if(state.title.length >12) "..." else ""))
+                            Text(text = if(state.title.length > 12) state.title
+                                .replaceRange(12,state.title.length,"...") else state.title
+                            )
                             Text(text = "Date Added: ${state.dateAdded}", fontSize = 14.sp)
                             Text(text = "Date Modified: ${state.dateModified}", fontSize = 14.sp)
+
                         }
                         if(state.book.archived){
                             IconButton(
